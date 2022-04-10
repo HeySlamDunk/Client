@@ -17,7 +17,9 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
 import java.io.FileInputStream;
+import java.io.Serializable;
 import java.util.HashMap;
+import java.util.function.Consumer;
 
 public class Morra extends Application {
 
@@ -30,7 +32,7 @@ public class Morra extends Application {
 	public Client ClientConnection;
 	private TextField textField1, textField2;
 	public int portNum;
-	public String IPnum;
+	public String ipAddress;
 	private Text Title, port, server;
 	//
 
@@ -39,6 +41,7 @@ public class Morra extends Application {
 	private Text titleGameState, points, pickDis;
 	private Button sendData;
 	public ListView<String> clientList;
+	Consumer<Serializable> data;
 	//public ListView<MorraInfo> clientList;
 
 
@@ -61,6 +64,26 @@ public class Morra extends Application {
 		sceneMap.put("Morra", MorraWelcome(primaryStage));
 		sceneMap.put("gameState", gameState(primaryStage));
 		sceneMap.put("ending", endingScreen(primaryStage));
+
+		// setOnaAction for Enter
+		morEnter.setOnAction(e->{
+			data = d -> {
+				Platform.runLater(() -> {
+					clientList.getItems().add(data.toString());
+				});
+			};
+
+			portNum = Integer.parseInt(textField1.getText());
+			ipAddress = textField2.getText();
+			ClientConnection = new Client(data, portNum, ipAddress);
+
+			ClientConnection.start();
+
+
+
+
+			primaryStage.setScene(sceneMap.get("gameState"));
+		});
 		
 				
 		Scene scene = new Scene(new VBox(), 700,700);
@@ -93,24 +116,6 @@ public class Morra extends Application {
 
 		// Button for Welcome Screen
 		morEnter = new Button("Connect to game");
-
-
-		// setOnaAction for Enter
-		morEnter.setOnAction(e->{
-				ClientConnection = new Client(data-> {
-					Platform.runLater(() -> {
-						clientList.getItems().add(data.toString());
-					});
-				});
-
-					ClientConnection.start();
-
-
-				portNum = Integer.parseInt(textField1.getText());
-				IPnum = textField2.getText();
-
-				primaryStage.setScene(sceneMap.get("gameState"));
-		});
 
 
 		// Font settings for MoraWelcome
