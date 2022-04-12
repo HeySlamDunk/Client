@@ -270,8 +270,8 @@ public class Morra extends Application {
 		});
 
 		opPane.setAlignment(Pos.TOP_RIGHT);
-		int opGues = x.p2Guess;
-		int opActual = x.p2Move;
+		int opGues = player2.p2Guess;
+		int opActual = player2.p2Move;
 
 		opGuess = new TextField(Integer.toString(opGues));
 		opPlayed = new Text(Integer.toString(opActual));
@@ -279,31 +279,41 @@ public class Morra extends Application {
 		if(opActual == 1) {
 			Image oneOP = new Image(new FileInputStream("src/main/java/One.png"));
 			ImageView imageOneOP = new ImageView(oneOP);
-			opPane.getChildren().addAll(opGuess, opPlayed, imageOneOP);
+			pane.getChildren().addAll(opGuess);
+			pane.getChildren().add(opPlayed);
+			pane.getChildren().add(imageOneOP);
 		} else if (opActual == 2) {
 			Image twoOP = new Image(new FileInputStream("src/main/java/Two.png"));
 			ImageView imagetwoOP = new ImageView(twoOP);
-			opPane.getChildren().addAll(opGuess, opPlayed, imagetwoOP);
+			pane.getChildren().add(opGuess);
+			pane.getChildren().add(opPlayed);
+			pane.getChildren().add(imagetwoOP);
 		} else if(opActual == 3) {
 			Image threeOP = new Image(new FileInputStream("src/main/java/Three.png"));
 			ImageView imagethreeOP = new ImageView(threeOP);
-			opPane.getChildren().addAll(opGuess, opPlayed, imagethreeOP);
+			pane.getChildren().addAll(opGuess);
+			pane.getChildren().add(opPlayed);
+			pane.getChildren().add(imagethreeOP);
 		} else if (opActual == 4) {
 			Image fourOP = new Image(new FileInputStream("src/main/java/Four.png"));
 			ImageView imagefourOP = new ImageView(fourOP);
-			opPane.getChildren().addAll(opGuess, opPlayed, imagefourOP);
+			pane.getChildren().addAll(opGuess);
+			pane.getChildren().add(opPlayed);
+			pane.getChildren().add(imagefourOP);
 		} else if (opActual == 5) {
 			Image fiveOP = new Image(new FileInputStream("src/main/java/Five.png"));
 			ImageView imagefiveOP = new ImageView(fiveOP);
-			opPane.getChildren().addAll(opGuess, opPlayed, imagefiveOP);
+			opPane.getChildren().addAll(opGuess);
+			pane.getChildren().add(opPlayed);
+			pane.getChildren().add(imagefiveOP);
 		}
 
 
 
 
-		mainPane.getChildren().addAll(pane,pane2, opPane);
+		mainPane.getChildren().addAll(pane,pane2);
 
-		return new Scene(mainPane,700, 700);
+		return new Scene(mainPane,900, 900);
 
 	}
 
