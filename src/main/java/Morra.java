@@ -15,8 +15,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import sun.tools.jar.CommandLine;
 
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.function.Consumer;
@@ -25,11 +27,12 @@ public class Morra extends Application {
 
 	private HashMap<String, Scene> sceneMap;
 
+	MorraInfo x;
 
 	// Objects for the MorraWelcome Screen
 	// 1 Button, 3 Text Labels, 2 TextBoxes
 	private Button morEnter;
-	public Client ClientConnection;
+	public Client ClientConnection, clientConn;
 	private TextField textField1, textField2;
 	public int portNum;
 	public String ipAddress;
@@ -38,11 +41,18 @@ public class Morra extends Application {
 
 	// Objects for gameState Screen
 	// tbd
-	private Text titleGameState, points, pickDis;
+	private Text titleGameState,pickDis;
+	private TextField entGuess, points;
 	private Button sendData;
 	public ListView<String> clientList;
 	Consumer<Serializable> data;
-	//public ListView<MorraInfo> clientList;
+	Consumer<Serializable> gameD;
+
+
+	// Opponent labels and plays, guess
+	private TextField opGuess;
+	private Text opPlayed;
+
 
 
 
@@ -58,8 +68,6 @@ public class Morra extends Application {
 		// TODO Auto-generated method stub
 		primaryStage.setTitle("Morra");
 		sceneMap = new HashMap<>();
-		
-
 
 		sceneMap.put("Morra", MorraWelcome(primaryStage));
 		sceneMap.put("gameState", gameState(primaryStage));
@@ -73,25 +81,24 @@ public class Morra extends Application {
 				});
 			};
 
+			gameD = g -> {
+				Platform.runLater(() -> {
+					x = (MorraInfo) g;
+				});
+			};
 			portNum = Integer.parseInt(textField1.getText());
 			ipAddress = textField2.getText();
-			ClientConnection = new Client(data, portNum, ipAddress);
+			ClientConnection = new Client(data, portNum, ipAddress, gameD);
 
 			ClientConnection.start();
 
-
-
-
 			primaryStage.setScene(sceneMap.get("gameState"));
 		});
-		
-				
+
 		Scene scene = new Scene(new VBox(), 700,700);
-		primaryStage.setScene(sceneMap.get("Morra"));
+		primaryStage.setScene(sceneMap.get("gameState"));
 		primaryStage.show();
 	}
-
-
 
 
 
@@ -138,7 +145,10 @@ public class Morra extends Application {
 		VBox mainPane = new VBox();
 		VBox pane = new VBox();
 		VBox pane2 = new VBox();
-
+		VBox opPane =  new VBox();
+		clientList = new ListView<String>();
+		MorraInfo player1 = new MorraInfo();
+		MorraInfo player2 = new MorraInfo();
 
 		Image one = new Image(new FileInputStream("src/main/java/One.png"));
 		ImageView imageOne = new ImageView(one);
@@ -151,13 +161,14 @@ public class Morra extends Application {
 		Image five = new Image(new FileInputStream("src/main/java/Five.png"));
 		ImageView imageFive = new ImageView(five);
 
-
-
-
-
 		sendData = new Button("Finalize");
 		titleGameState = new Text("Morra");
-		points = new Text("Points: \n\n\n");
+		points = new TextField("0 \n\n");
+		points.setEditable(false);
+
+
+		entGuess = new TextField("Erase and enter a Guess 1-5\n");
+
 		pickDis = new Text("Pick an image 1-5\n\n");
 		imageOne.setFitHeight(50);
 		imageOne.setFitWidth(50);
@@ -172,13 +183,53 @@ public class Morra extends Application {
 
 		imageOne.setOnMouseClicked((MouseEvent e) ->{
 
-			MorraInfo x = new MorraInfo();
+			if(x.playerID == 1) {
+				player1.myMove = 1;
+				clientList.getItems().add("You have picked 1");
+			} else if(x.playerID == 2) {
+				player2.p2Move = 1;
+			}
+		});
 
-			x.p1Move=1;
+		imageTwo.setOnMouseClicked((MouseEvent e) ->{
 
+			if(x.playerID == 1) {
+				player1.myMove = 2;
+				clientList.getItems().add("You have picked 2");
+			} else if(x.playerID == 2) {
+				player2.p2Move = 2;
+			}
+		});
 
-			System.out.println(x.p1Move);
+		imageThree.setOnMouseClicked((MouseEvent e) ->{
 
+			if(x.playerID == 1) {
+				player1.myMove = 3;
+				clientList.getItems().add("You have picked 3");
+			} else if (x.playerID == 2) {
+				player2.p2Move = 3;
+			}
+		});
+
+		imageFour.setOnMouseClicked((MouseEvent e) ->{
+
+			if(x.playerID == 1) {
+				player1.myMove = 4;
+				clientList.getItems().add("You have picked 4");
+			} else if(x.playerID == 2) {
+				player2.p2Move = 4;
+			}
+		});
+
+		imageFive.setOnMouseClicked((MouseEvent e) ->{
+
+			if(x.playerID == 1) {
+				player1.myMove = 5;
+				clientList.getItems().add("You have picked 5");
+			} else if (x.playerID == 2) {
+				player2.p2Move = 5;
+
+			}
 		});
 
 		// Formatting for Morra title gameState
@@ -189,13 +240,68 @@ public class Morra extends Application {
 		// Formatting for points and label
 		pane2.setAlignment(Pos.CENTER_LEFT);
 
-		points.setFont(Font.font("Verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
-		pickDis.setFont(Font.font("Verdana", FontWeight.BOLD, FontPosture.REGULAR, 15));
+		entGuess.setMaxWidth(400);
+		entGuess.prefHeight(400);
+		points.setMaxWidth(200);
+		points.prefHeight(200);
 
-		pane2.getChildren().addAll(points, pickDis, imageOne, imageTwo, imageThree, imageFour, imageFive, sendData);
+		points.setFont(Font.font("Verdana", FontWeight.BOLD, FontPosture.REGULAR, 15)); // points myPoints
+		pickDis.setFont(Font.font("Verdana", FontWeight.BOLD, FontPosture.REGULAR, 15)); // pick (1-5)
+
+		pane2.getChildren().addAll(points, entGuess, pickDis, imageOne, imageTwo, imageThree, imageFour, imageFive, sendData, clientList);
 		pane.getChildren().addAll(titleGameState);
 
-		mainPane.getChildren().addAll(pane,pane2);
+
+		sendData.setOnAction(e-> {
+
+			if(x.playerID == 1) {
+				player1.myGuess = Integer.parseInt(entGuess.getText());
+				ClientConnection.send((Serializable) player1);
+			} else if(x.playerID == 2) {
+				player2.p2Guess = Integer.parseInt(entGuess.getText());
+				ClientConnection.send((Serializable) player2);
+			}
+
+			clientList.getItems().add("Your guess was " + player1.myGuess);
+			clientList.getItems().add("You picked " + player1.myMove);
+			clientList.getItems().add("Oppenents Guess was " + player2.p2Guess);
+			clientList.getItems().add("Opponent picked " + player2.p2Move);
+
+		});
+
+		opPane.setAlignment(Pos.TOP_RIGHT);
+		int opGues = x.p2Guess;
+		int opActual = x.p2Move;
+
+		opGuess = new TextField(Integer.toString(opGues));
+		opPlayed = new Text(Integer.toString(opActual));
+
+		if(opActual == 1) {
+			Image oneOP = new Image(new FileInputStream("src/main/java/One.png"));
+			ImageView imageOneOP = new ImageView(oneOP);
+			opPane.getChildren().addAll(opGuess, opPlayed, imageOneOP);
+		} else if (opActual == 2) {
+			Image twoOP = new Image(new FileInputStream("src/main/java/Two.png"));
+			ImageView imagetwoOP = new ImageView(twoOP);
+			opPane.getChildren().addAll(opGuess, opPlayed, imagetwoOP);
+		} else if(opActual == 3) {
+			Image threeOP = new Image(new FileInputStream("src/main/java/Three.png"));
+			ImageView imagethreeOP = new ImageView(threeOP);
+			opPane.getChildren().addAll(opGuess, opPlayed, imagethreeOP);
+		} else if (opActual == 4) {
+			Image fourOP = new Image(new FileInputStream("src/main/java/Four.png"));
+			ImageView imagefourOP = new ImageView(fourOP);
+			opPane.getChildren().addAll(opGuess, opPlayed, imagefourOP);
+		} else if (opActual == 5) {
+			Image fiveOP = new Image(new FileInputStream("src/main/java/Five.png"));
+			ImageView imagefiveOP = new ImageView(fiveOP);
+			opPane.getChildren().addAll(opGuess, opPlayed, imagefiveOP);
+		}
+
+
+
+
+		mainPane.getChildren().addAll(pane,pane2, opPane);
 
 		return new Scene(mainPane,700, 700);
 
@@ -204,6 +310,15 @@ public class Morra extends Application {
 	public Scene endingScreen(Stage primaryStage) {
 
 		VBox pane = new VBox();
+
+
+
+
+
+
+
+
+
 
 		return new Scene(pane,700, 700);
 	}

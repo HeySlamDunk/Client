@@ -1,4 +1,3 @@
-
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -8,6 +7,7 @@ import java.util.function.Consumer;
 
 public class Client extends Thread {
 
+    MorraInfo x;
     int port;
     String ip;
     Socket socketClient;
@@ -15,14 +15,16 @@ public class Client extends Thread {
     ObjectInputStream in;
 
     private Consumer<Serializable> callback;
+    private Consumer<Serializable> game;
 
 
-    Client(Consumer<Serializable>call, int port, String ip){
+    Client(Consumer<Serializable>call, int port, String ip, Consumer<Serializable> game){
         this.port = port;
         this.ip = ip;
         callback = call;
-    }
+        this.game = game;
 
+    }
 
 
     public void run() {
@@ -33,9 +35,32 @@ public class Client extends Thread {
             out = new ObjectOutputStream(socketClient.getOutputStream());
             in = new ObjectInputStream(socketClient.getInputStream());
             socketClient.setTcpNoDelay(true);
+            String message = in.readObject().toString();
+            callback.accept(message);
         } catch (Exception e) {}
+        while(true) {
+            try {
+                x = (MorraInfo) in.readObject();
+                game.accept(x);
 
+            } catch (Exception e) {
 
+            }
+        }
     }
+
+
+    public void send(Serializable data) {
+        try {
+            out.writeObject(data);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
 
 }
